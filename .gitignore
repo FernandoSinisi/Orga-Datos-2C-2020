@@ -129,5 +129,10 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
+#Catboost stuff
 catboost_info/*
 /catboost_info
+.json
+.tmp
+.tsv
+.out.tfevents
