@@ -132,7 +132,7 @@ dmypy.json
 #Catboost stuff
 catboost_info/*
 /catboost_info
-.json
-.tmp
-.tsv
-.out.tfevents
+*.json
+*.tmp
+*.tsv
+*.out.tfevents
