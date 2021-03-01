@@ -136,3 +136,7 @@ catboost_info/*
 *.tmp
 *.tsv
 *.out.tfevents
+
+#extras
+.ods
+.*#
