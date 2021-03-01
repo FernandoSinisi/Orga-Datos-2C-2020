@@ -138,5 +138,5 @@ catboost_info/*
 *.out.tfevents
 
 #extras
-.ods
+*.ods
 .*#
