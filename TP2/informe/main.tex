@@ -155,10 +155,38 @@ De esta forma, a partir de los features ya existentes se agregaron lo siguientes
         \item Last\_Modified\_Date
     \end{itemize}
     para cada uno, se crearon dos columnas: DOY y Year las cuales representan, respectivamente, el día de año y el año de la fecha.
+    \item También a partir de variables categóricos creamos algunos features que sean la concatenación de estas variables como:
+    \begin{itemize}
+        \item Delivery\_Quarter\_of\_Year
+        \item Region\_Territory\_Country
+        \item Product\_Family\_Name
+    \end{itemize}
+    \item Por otro lado creamos columnas binarias en base a otros features ya existentes:
+    \begin{itemize}
+        \item ASP\_Higher\_Mean: con valor 1 si el ASP es mayor al promedio, 0 de lo contrario.
+        \item TRF\_Higher\_Mean: con valor 1 si las TRF son mayores al promedio, 0 de lo contrario.
+        \item Same\_Owner: con valor 1 si el responsable de la cuenta cliente es el mismo que el responsable de la oportunidad, 0 de lo contrario. 
+        \item Last\_Modified\_By\_Account\_Owner: con valor 1 si el responsable de la cuenta cliente es el último que modifico la  oportunidad, 0 de lo contrario.
+        \item Last\_Modified\_By\_Opportunity\_Owner: con valor 1 si el responsable de la oportunidad  es el último que modifico la  misma, 0 de lo contrario.
+    \end{itemize}
 \end{itemize}
 \subsection{Feature Selection}
+Luego de agregar features a los ya existentes con el fin de mejorar las predicciones, encaramos la selección de los mismos para cada modelo de 3 maneras distintas. 
+ \begin{itemize}
+        \item Usando todos los features: De esta manera entrenaríamos con la mayor cantidad de features, así no privábamos a ningún modelo de alguno de ellos, pero teniendo en cuenta que los distintos modelos pueden no ser tan buenos con muchos features o inclusive tardar muchas horas en entrenarse.
+        \item Usando los features mas importantes según xgb: Se realizó una selección usando XgbClassifier entrenando con todas las columnas y obteniendo la importancia de las mismas.
+        \begin{center}
+            \includegraphics[scale=0.5]{imgs/feature-selection-xgb.png}
+        \end{center}
+        \item Usando los features mas importante según cada modelo: Con cada modelo se entrenó con todas las columnas y luego a ese modelo se le extrajeron los mejores features y con ellos luego se volvería a entrenar.
+        Esto fue útil en los casos donde los encoding usados nos generaron miles de columnas/features donde muchos no aportaban nada al modelo.
+    \end{itemize}
+    
+Como parte del feature selection notamos que ciertos features como \textit{'Opportunity\_Name'} o \textit{'ID'} se consideraban importantes pero en realidad al ser únicas por ítem o por oportunidad lo que ocurría es que algunos modelos los utilizaba incorrectamente por lo que para algunos casos procedimos a eliminarlos.
+El caso del \textit{'Opportunity\_ID'} fue un caso particular en el que no podíamos eliminar la columna ya que se necesitaba para poder agrupar los items y también se usaba para generar el submit.
+
 \section{Feature Encoding}
-Después del analisis del primer trabajo practico, se evidencio que el set de datos consiste de variables de tipo numéricas, las cuales no necesitan ningún tipo de codificación, y por otra parte variable categórica. Como no hay ninguna variable de tipo \textbf{string}, se investigo cual era la mejor forma de tratar este tipo de variables(categóricas), y para ello, se utilizaron los encodings que se detallan a continuación:
+Después del análisis del primer trabajo practico, se evidenció que el set de datos consiste de variables de tipo numéricas, las cuales no necesitan ningún tipo de codificación, y por otra parte variables categóricas. Como no hay ninguna variable de tipo \textbf{string}, se investigo cual era la mejor forma de tratar este tipo de variables(categóricas), y para ello, se utilizaron los encodings que se detallan a continuación:
 
 \subsection{Mean encoding}
 \subsection{Binary Encoding}
@@ -169,13 +197,48 @@ Después del analisis del primer trabajo practico, se evidencio que el set de da
 \subsection{JamesStein Encoder}
 \subsection{LeaveOneOut Encoder}
 \subsection{MEstimate Encoder}
-\subsection{Ordinal Encode}
-\subsection{Sum Encoder}
-\subsection{Polynomial Encoder}
-\subsection{OE Encoder}
-\subsection{OneHot Encoder}
+Este encoding esta basado en mean encoding pero nos da la posibilidad de aplicar smoothing (regularización) para no filtrar tanto el target al set de entrenamiento. En lugar de usar solo el promedio se puede regularizar mediante la siguiente formula:
+\begin{center}
+    \includegraphics[scale=0.5]{imgs/formula-smoothing.png}
+\end{center}
+Donde alfa es la variable de regularización que elegimos para nuestro estimador. Como podemos observar si alfa=0 entonces nos queda el promedio del target y es mean-encoding.
+\url{https://contrib.scikit-learn.org/category_encoders/mestimate.html}
+
+\subsection{Ordinal Encoder}
+Esta codificación es la mas simple de todas y una de las que peor resultado genera. Consiste en que a cada valor de la variable categórica se lo reemplaza por un número asociado a ese valor. Por ej si tengo 4 posibles valores para una variable se asignarían los números 1, 2, 3 y 4.
+Esto nos convierte directamente una columna categórica a numérica, pero al usar estos números en los modelos se pueden generar relaciones 'muy extrañas' como que una variable categórica mas otra variable categórica dan una tercera variable categórica. Esto no solo no aportará nada al modelo sino que dará malos resultados.
+\url{https://contrib.scikit-learn.org/category_encoders/ordinal.html}
+
+\subsection{WOE Encoder}
+El Weight of Evidence encoding codifica las variables categóricas en base a su peso respecto del target mediante la siguiente formula:
+\begin{center}
+    \includegraphics[scale=0.5]{imgs/WOE.png}
+\end{center}
+donde adj es el factor que evita una división por 0.
+Este encoding funciona bien con el modelo de LogisticRegression por utilizar la misma escala logaritmica pero tiene la desventaja de que puede sobreajustar o inclusive tenes distintos valores de una variable categórica con el mismo encoding. 
+\url{https://contrib.scikit-learn.org/category_encoders/woe.html}
+
+\subsection{One Hot Encoder}
+Este tipo de encoding se basa en que para cada valor categórico de una columna del dataset creara una nueva columna de valor binario, si la row tenía ese valor colocara un 1 en la columna y 0 en las demás. Este encoding podía ser util para features con pocos valores posibles, por lo tanto tendríamos la columna original y tantas columnas nuevas como valores posibles. El punto débil de este encoding es que casos de variables con muchos valores posibles o en el caso de tener muchos features categóricos se necesitaría mucha memoria para entrenar.
+\url{https://contrib.scikit-learn.org/category_encoders/onehot.html}
+
 \subsection{Catboost Encoder}
+Esta codificación esta basada en Mean Encoding pero se diferencia que calcula la probabilidad en tiempo real, es decir sobre la marcha por lo tanto el dataset no puede estar ordenado por la variable Target. La ventaja de calcularlo sobre la marcha es que para un mismo valor de la variable categórica no se van a obtener los mismos valores y por lo tanto no hay que agregar ruido. Como desventaja al igual que Mean Encoding estoy 'filtrando' el Target por lo tanto hay que tener cuidado con no generar overfitting.
+\url{https://contrib.scikit-learn.org/category_encoders/catboost.html}
+
 \subsection{Base N Encoder}
+Esta codificación vendría a ser la generalizacion de one-hot-encoding o binary-encoding, es decir elegimos en que base codificar y generará log en base n de la cantidad de valores posibles de la variable a encodear columnas. En otras palabras si elegimos base = 1 entonces sería como one-hot-encoding y si elegimos base = 2 sería como binary-encoding.
+\url{https://contrib.scikit-learn.org/category_encoders/basen.html}
+
+\subsection{Sum Encoder}
+Es un tipo de encoding también conocido como Effect Encoding o Deviation Encoding, esta basado en one-hot-encoding con la diferencia que en lugar de tener N columnas (1 por cada uno de los N valores posibles de la variable) nos genera N-1 columnas nuevas ya que un valor de la variable se codifica con todos valores -1.
+\url{https://contrib.scikit-learn.org/category_encoders/sum.html#category_encoders.sum_coding.SumEncoder}
+
+\subsection{Polynomial Encoder}
+Es un encoding perteneciente al grupo de los 'Contrast Encoders' que permiten centran las variables categóricas de manera que la intersección de un modelo no sea el promedio de una categoría, sino la media de todos los puntos de datos en el conjunto de datos.
+En este caso este el encoder codifica las variables mediante polinomios. 
+\url{https://contrib.scikit-learn.org/category_encoders/polynomial.html}
+
 \section{Modelos}
 \subsubsection{KNN}
 Este algoritmo consiste en encontrar los vecinos más cercanos al punto que se busca clasificar, para luego predecir la clase del punto en cuestión que se obtendrá a partir de la clase mayoritaria presente en sus vecinos.
