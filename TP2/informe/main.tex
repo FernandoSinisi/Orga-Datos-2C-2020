@@ -191,11 +191,33 @@ Después del análisis del primer trabajo practico, se evidenció que el set de 
 \subsection{Mean encoding}
 \subsection{Binary Encoding}
 \subsection{Count Encoder}
-\subsection{GLMM Encoder}
-\subsection{Hashing Encoder}
+Este encoder, también conocido como frequency encoder, tal como su nombre lo indica, trabaja con la frecuencia de cada valor. Es decir, para la columna categórica primero calcula la frecuencia de cata categoría en la columna. Una vez hecho esto, cada valor categórico es reemplazado por la cantidad de veces que este valor aparece en el dataset, previamente calculado.
+
+\subsection{Generalized Linear Mixed Model Encoder Encoder}
+
+El modelo lineal generalizado es una generalización de la regresión lineal. La misma, predice el valor esperado de una cantidad desconocida dada como una combinación lineal de un conjunto de valores observados. Lo cual es útil cuando la variable de respuesta tiene una distribución normal, en cambio, el modelo generalizado sirve también para respuestas con distribución normal, binomial, Poisson y gamma, entre otras. \newline
+
+Este encoder, utiliza el modelo mixto lineal generalizado(GLMM), el cual es una extensión del modelo lineal generalizado el cual incluye efectos aleatorios en el predictor lineal, lo que proporciona un modelo de probabilidad explícito que explica el origen de las correlaciones.\newline
+
+El mismo, no tiene hiperparámetros para tunear. Cuantas menos observaciones tenga una categoría y/o más varíe el resultado para una categoría, mayor será la regularización hacia la media. Este encoding es muy poderoso y puede ser utilizable tanto para targets continuos como binomiales. En al caso de targets binomiales(como en este trabajo), el codificador devuelve probabilidades logarítmicas regularizadas por categoría.
+
 \subsection{Helmert Encoder}
+
+Este encoding pertenece al grupo de los 'Contrast Encoders', explicado en polynomial encoder.
+En particular, Helmert, siendo cada "nivel", cada categoría: la media de la variable dependiente para un nivel se compara con la media de la variable dependiente sobre todos los niveles anteriores.
+
 \subsection{JamesStein Encoder}
-\subsection{LeaveOneOut Encoder}
+El estimador de James-Stein devuelve un promedio ponderado de:
+\begin{itemize}
+    \item La media del target para el valor de la columna 
+    \item La media del target, independientemente del valor de la columna
+\end{itemize}
+James-Stein Encoder reduce el promedio hacia el promedio general. Es un codificador basado en mean encoding. Sin embargo, el mismo tiene una limitación práctica: se definió solo para distribuciones normales.
+\subsection{Leave One Out Encoder}
+
+Este encoder es prácticamente igual a mean encoding. La diferencia es que este, excluye el target de la fila actual al calcular la media del target de un nivel para reducir el efecto de valores atípicos. \newline
+Por otra parte, se puede agregar algo de ruido a los datos para evitar el overfitting. 
+
 \subsection{MEstimate Encoder}
 Este encoding esta basado en mean encoding pero nos da la posibilidad de aplicar smoothing (regularización) para no filtrar tanto el target al set de entrenamiento. En lugar de usar solo el promedio se puede regularizar mediante la siguiente formula:
 \begin{center}
@@ -238,7 +260,7 @@ Es un tipo de encoding también conocido como Effect Encoding o Deviation Encodi
 Es un encoding perteneciente al grupo de los 'Contrast Encoders' que permiten centran las variables categóricas de manera que la intersección de un modelo no sea el promedio de una categoría, sino la media de todos los puntos de datos en el conjunto de datos.
 En este caso este el encoder codifica las variables mediante polinomios. 
 \url{https://contrib.scikit-learn.org/category_encoders/polynomial.html}
-
+\newpage
 \section{Modelos}
 \subsubsection{KNN}
 Este algoritmo consiste en encontrar los vecinos más cercanos al punto que se busca clasificar, para luego predecir la clase del punto en cuestión que se obtendrá a partir de la clase mayoritaria presente en sus vecinos.
