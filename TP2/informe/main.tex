@@ -191,11 +191,38 @@ Después del análisis del primer trabajo practico, se evidenció que el set de 
 \subsection{Mean encoding}
 \subsection{Binary Encoding}
 \subsection{Count Encoder}
-\subsection{GLMM Encoder}
-\subsection{Hashing Encoder}
+Este encoder, también conocido como frequency encoder, tal como su nombre lo indica, trabaja con la frecuencia de cada valor. Es decir, para la columna categórica primero calcula la frecuencia de cata categoría en la columna. Una vez hecho esto, cada valor categórico es reemplazado por la cantidad de veces que este valor aparece en el dataset, previamente calculado.
+\url{https://contrib.scikit-learn.org/category_encoders/count.html}
+
+\subsection{Generalized Linear Mixed Model Encoder}
+
+El modelo lineal generalizado es una generalización de la regresión lineal. La misma, predice el valor esperado de una cantidad desconocida dada como una combinación lineal de un conjunto de valores observados. Lo cual es útil cuando la variable de respuesta tiene una distribución normal, en cambio, el modelo generalizado sirve también para respuestas con distribución normal, binomial, Poisson y gamma, entre otras. \newline
+
+Este encoder, utiliza el modelo mixto lineal generalizado(GLMM), el cual es una extensión del modelo lineal generalizado el cual incluye efectos aleatorios en el predictor lineal, lo que proporciona un modelo de probabilidad explícito que explica el origen de las correlaciones.\newline
+
+El mismo, no tiene hiperparámetros para tunear. Cuantas menos observaciones tenga una categoría y/o más varíe el resultado para una categoría, mayor será la regularización hacia la media. Este encoding es muy poderoso y puede ser utilizable tanto para targets continuos como binomiales. En al caso de targets binomiales(como en este trabajo), el codificador devuelve probabilidades logarítmicas regularizadas por categoría.
+\url{https://contrib.scikit-learn.org/category_encoders/glmm.html}
+
 \subsection{Helmert Encoder}
+
+Este encoding pertenece al grupo de los 'Contrast Encoders', explicado en polynomial encoder.
+En particular, Helmert, siendo cada "nivel", cada categoría: la media de la variable dependiente para un nivel se compara con la media de la variable dependiente sobre todos los niveles anteriores.
+\url{https://contrib.scikit-learn.org/category_encoders/helmert.html}
+
 \subsection{JamesStein Encoder}
-\subsection{LeaveOneOut Encoder}
+El estimador de James-Stein devuelve un promedio ponderado de:
+\begin{itemize}
+    \item La media del target para el valor de la columna 
+    \item La media del target, independientemente del valor de la columna
+\end{itemize}
+James-Stein Encoder reduce el promedio hacia el promedio general. Es un codificador basado en mean encoding. Sin embargo, el mismo tiene una limitación práctica: se definió solo para distribuciones normales.
+\url{https://contrib.scikit-learn.org/category_encoders/jamesstein.html}
+
+\subsection{Leave One Out Encoder}
+Este encoder es prácticamente igual a mean encoding. La diferencia es que este, excluye el target de la fila actual al calcular la media del target de un nivel para reducir el efecto de valores atípicos. \newline
+Por otra parte, se puede agregar algo de ruido a los datos para evitar el overfitting. 
+\url{https://contrib.scikit-learn.org/category_encoders/leaveoneout.html}
+
 \subsection{MEstimate Encoder}
 Este encoding esta basado en mean encoding pero nos da la posibilidad de aplicar smoothing (regularización) para no filtrar tanto el target al set de entrenamiento. En lugar de usar solo el promedio se puede regularizar mediante la siguiente formula:
 \begin{center}
@@ -238,9 +265,11 @@ Es un tipo de encoding también conocido como Effect Encoding o Deviation Encodi
 Es un encoding perteneciente al grupo de los 'Contrast Encoders' que permiten centran las variables categóricas de manera que la intersección de un modelo no sea el promedio de una categoría, sino la media de todos los puntos de datos en el conjunto de datos.
 En este caso este el encoder codifica las variables mediante polinomios. 
 \url{https://contrib.scikit-learn.org/category_encoders/polynomial.html}
-
+\newpage
 \section{Modelos}
-\subsubsection{KNN}
+Cada uno de los encoding mencionados en la sección anterior pueden funcionar de distinta manera en distintos modelos, así que se probaron ciertas combinaciones de los mismos con los siguiente algoritmos de machine learning:
+
+\subsection{KNN}
 Este algoritmo consiste en encontrar los vecinos más cercanos al punto que se busca clasificar, para luego predecir la clase del punto en cuestión que se obtendrá a partir de la clase mayoritaria presente en sus vecinos.
 Los hiperparámetros comunes en KNN son:
 \begin{itemize}
@@ -253,9 +282,7 @@ Los hiperparámetros comunes en KNN son:
 \end{itemize}
 KNN es uno de los algoritmos mas sencillos de Machine Learning pero definiendo correctamente sus hiperparámetros puede ser muy eficiente. Una desventaja es que se trata de un algoritmo de orden cuadrático por lo que puede tener un gran impacto a la hora de la ejecución.
 
-\subsection{Algoritmos de clasificacion}
-
-\subsubsection{Random Forest}
+\subsection{Random Forest}
 Este es uno de los algoritmos mas populares para clasificación, el cual crea un conjunto de árboles de decisión a partir de un subconjunto del set de datos de entrenamiento seleccionado al azar. 
 Luego, para decidir la clase final del objeto puede utilizar dos formas de decisión, por mayoría de votos o por peso (donde los árboles con alta tasa de error reciben un valor de bajo peso y viceversa, permitiendo que los árboles con baja tasa de error tengan mayor impacto).
 Los hiperparámetros comunes en RandomForest son:
@@ -275,21 +302,7 @@ Los hiperparámetros comunes en RandomForest son:
     
 \end{itemize}
 
-\subsubsection{SVC}
-El objetivo de SVC, es entrenar el set de datos encontrando el mejor hiper-plano que divide a los mismos en categorías.
-
-\subsubsection{NuSVC}
-Este algoritmo es similar a SVC (Support Vector Classifier), con la diferencia de que usa como parámetro "nu" el cual controla el número de vectores soportados.
-
-\subsubsection{Naive Bayes Classifier}
-Este algoritmo considera cada feature de forma independiente, calculando la probabilidad de que el feature pertenezca a cada una de las categorías, dando como resultado la que contenga el mayor valor de probabilidad. El modelo utilizado para calcular dicha probabilidad esta basado en el teorema de Bayes. Se parte de la suposición de que todos los predictores tienen el mismo efecto en el resultado. Existen diferentes tipos de clasificadores que siguen este modelo.
-
-Los hiperparámetros comunes en Naive Bayes son:
-\begin{itemize}
-    \item alfa: Parámetro utilizado para realizar el suavizado de Laplace, el cual permite no tener probabilidades nulas a la hora de calcular la probabilidad de que el vector de palabras para un documento se encuentre en alguna de las categorias. Permitiendo siempre generar alguna clasificación. 
-\end{itemize}
-
-\subsubsection{XGBoost}
+\subsection{XGBoost}
 Este algoritmo, es un boosting de arboles de decisión en el cual, cada árbol intenta corregir lo que el anterior no pudo predecir correctamente. A partir de la combinación de varios árboles de decisión, logra buenas predicciones. Boosting es una técnica que funciona según el principio de ensamble. Combina un set de modelos débiles y mejora la precisión de la predicción.\\
 Tiene una función objetivo que depende de los parámetros que tiene que aprender. La parte de la predicción esta dada por la diferencia entre el valor de la predicción y el valor real. La predicción final de un boosting es la sumatoria de las predicciones de varios arboles. Una de las cosas que hace que este algoritmo sea tan rápido es que únicamente recibe valores numéricos.
  
@@ -307,7 +320,36 @@ Los hiperparametros mas importantes son:
     
 \end{itemize}
 
-\subsubsection{Red Neuronal}
+Ejemplo del arbol creado con xgboost
+\begin{center}
+    \includegraphics[scale=0.5]{imgs/xgb.png}
+\end{center}
+
+
+\subsection{LightGBM}
+Este modelo es un algoritmo de \textit{gradient boosting} sobre arboles de decisión.
+Produce el modelo predictivo a partir de un conjunto de modelos de predicción débiles. Construye el modelo de forma escalonada y lo generaliza disminuyendo la función de error creciendo verticalmente eligiendo la hoja con mayor "delta loss" para crecer. El crecimiento por hojas, en vez de por niveles, permite reducir aún más el \textit{loss}.
+
+\begin{center}
+    \includegraphics[scale=0.5]{imgs/lightgbm.jpeg}
+\end{center}
+
+\subsection{CatBoost}
+Este es un algoritmo de aprendizaje que aumenta el gradiente en árboles de decisión que como lo dice su nombre, funciona bien para distintas categorías de datos.
+Durante el entrenamiento, se construye un conjunto de árboles de decisión de forma consecutiva. Cada árbol sucesivo se construye con pérdidas reducidas en comparación con los árboles anteriores.
+Para evitar el overfitting, utiliza un detector que cuando se activa, los árboles dejan de construirse.
+A diferencia de LightGBM el arbol creado por catboost es equilibrado como lo muestra la imagen:
+
+\begin{center}
+    \includegraphics[scale=0.5]{imgs/catboost.png}
+\end{center}
+
+
+
+\subsection{Logistic Regression}
+Este modelo, es el método de referencia para problemas de clasificación binaria (aquellos donde solo existen dos valores de clase). El mismo, utiliza de base \textit{la función logística} o también llamada \textit{función sigmoidea}, la cual es representada como una curva en forma de S que puede tomar cualquier número real y asignarlo a un valor entre 0 y 1, pero nunca exactamente en esos límites. Logistic Regression predice la probabilidad de que un dato pertenezca a una clase (clase default) y luego esta predicción es transformada a un valor binario con la función logística. 
+
+\subsection{Red Neuronal}
 Este algoritmo no lineal genera las predicciones a partir de la definición de una función de activación. Usualmente las funciones de activación mas comunes suelen ser: \textit{sigmoid}, \textit{relu} o \textit{softmax}. La combinación de distintas funciones de activación es lo que genera la red, donde se cuenta con una capa visible en la cual se reciben los inputs y distintas capas ocultas donde se procesa la información para obtener el output.
 
 \begin{center}
@@ -321,17 +363,31 @@ En particular, las redes utilizadas para el procesamiento de lenguaje natural so
     \includegraphics[scale=0.5]{imgs/red neuronal recurrente.png}
 \end{center}
 
-\subsubsection{LightGBM}
-Este modelo es un algoritmo de \textit{gradient boosting} sobre arboles de decisión.
-Produce el modelo predictivo a partir de un conjunto de modelos de predicción débiles. Construye el modelo de forma escalonada y lo generaliza disminuyendo la función de error creciendo verticalmente eligiendo la hoja con mayor "delta loss" para crecer. El crecimiento por hojas, en vez de por niveles, permite reducir aún más el \textit{loss}.
 
-\begin{center}
-    \includegraphics[scale=0.5]{imgs/lightgbm.jpeg}
-\end{center}
 
-\subsubsection{Logistic Regression}
-Este modelo, es el método de referencia para problemas de clasificación binaria (aquellos donde solo existen dos valores de clase). El mismo, utiliza de base \textit{la función logística} o también llamada \textit{función sigmoidea}, la cual es representada como una curva en forma de S que puede tomar cualquier número real y asignarlo a un valor entre 0 y 1, pero nunca exactamente en esos límites. Logistic Regression predice la probabilidad de que un dato pertenezca a una clase (clase default) y luego esta predicción es transformada a un valor binario con la función logística. 
-\section{Ensambles}
-\section{Resultados Obtenidos}
-\section{Conclusiones}
+\subsection{SVC}
+El objetivo de SVC, es entrenar el set de datos encontrando el mejor hiper-plano que divide a los mismos en categorías.
+
+\subsection{NuSVC}
+Este algoritmo es similar a SVC (Support Vector Classifier), con la diferencia de que usa como parámetro \textit{'nu'} el cual controla el número de vectores soportados.
+
+\subsection{Naive Bayes Classifier}
+Este algoritmo considera cada feature de forma independiente, calculando la probabilidad de que el feature pertenezca a cada una de las categorías, dando como resultado la que contenga el mayor valor de probabilidad. El modelo utilizado para calcular dicha probabilidad esta basado en el teorema de Bayes. Se parte de la suposición de que todos los predictores tienen el mismo efecto en el resultado. Existen diferentes tipos de clasificadores que siguen este modelo.
+
+Los hiperparámetros comunes en Naive Bayes son:
+\begin{itemize}
+    \item alfa: Parámetro utilizado para realizar el suavizado de Laplace, el cual permite no tener probabilidades nulas a la hora de calcular la probabilidad de que el vector de palabras para un documento se encuentre en alguna de las categorías. Permitiendo siempre generar alguna clasificación. 
+\end{itemize}
+
+\section{Desarrollo}
+
+Finalmente luego de la limpieza de los datasets, el feature engineering y los encoding se prosiguió al entrenamiento y tuneo de hiperparámetros para las distintas combinaciones de modelo-encoding.
+
+En la primeras pruebas nos encontramos con que los modelos basados en arboles, sin tunear parámetros y usando todos los features eran mejores que los modelos de redes neuronales por lo que los primeros submits que nos determinaron una base fueron con
+RandomForest-MeanEncoding y Xgboost-MeanEncoding.
+
+
+
+
+\section{Resultados y conclusiones}
 \end{document}
