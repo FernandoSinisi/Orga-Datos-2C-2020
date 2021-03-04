@@ -116,17 +116,25 @@ El objetivo principal del trabajo práctico es construir un modelo capaz de esti
 \operatorname{loss}(\mathbf{y}, \hat{\mathbf{y}})=-\frac{1}{N} \sum_{i=1}^{N} y_{i} \log \left(\hat{y}_{i}\right)+\left(1-y_{i}\right) \log \left(1-\hat{y}_{i}\right)
 \end{equation}
 siendo \textit{y} un vector binario con el éxito real de cada oportunidad y \textit{ŷ} un vector con las probabilidades continuas. \\
-Este modelo, se realizo con algoritmos de Machine Learning, lo cual busca poder generar clasificaciones en base a un entrenamiento sobre información pasada, las cuales luego son validadas. En el presente trabajo se probaron distintos algoritmos, los cuales hacen uso de los datos en distinta manera. Por esto ultimo es muy importante saber cuales datos usar y como codificarlos. \\
-De esta forma, fueron brindados dos sets de datos: 
-\textit{Train\_TP2\_Datos\_2020-2C.csv} y \textit{Test\_TP2\_Datos\_2020-2C.csv} los cuales fueron utilizados, respectivamente, para entrenar los modelos, y luego realizar las predicciones. \\
+Este modelo, se realizo con algoritmos de Machine Learning, lo cual busca poder generar clasificaciones en base a un entrenamiento sobre información pasada, las cuales luego son validadas.
+
+En el presente trabajo se probaron distintos algoritmos de Machine Learning,los cuales hacen uso de los datos en distinta manera, con el fin de predecir en base a la informacion brindada la oportunidad de exito de una oportunidad.
+Por esto es muy importante saber cuales datos usar y como codificarlos. \\
+
+Se nos fueron brindados dos sets de datos: 
+\newline
+\textit{Train\_TP2\_Datos\_2020-2C.csv} y \textit{Test\_TP2\_Datos\_2020-2C.csv}
+los cuales fueron utilizados, respectivamente, para entrenar los modelos, y luego realizar las predicciones. \\
 En ambos sets de datos, cada fila representa un ítem
-vendido para una ’oportunidad’ la cual consiste en un proyecto de venta o instalación de equipos para un cliente. La venta se estructura alrededor de TRF (Toneladas de refrigeración) y puede ser una oportunidad que resultó exitosa o no. \\
-El código correspondiente se puede hallar en el siguiente repositorio: \url{https://github.com/FernandoSinisi/Orga-Datos-2C-2020}
+vendido para una ’oportunidad’ la cual consiste en un proyecto de venta o instalación de equipos para un cliente.
+ 
+
 \newpage
   
 
 \section{Limpieza de datos}
-La limpieza de los datos es un proceso fundamental para identificar datos aberrantes, faltantes o atípicos. Para el caso del set de datos utilizado en este trabajo, en el primer trabajo practico notamos que había ciertas columnas cuyo contenido era nulo en mas del 60\% de su totalidad. Las mismas son:
+La limpieza de los datos es un proceso fundamental para identificar datos aberrantes, faltantes o atípicos. Para el caso del set de datos utilizado en este trabajo, en el primer trabajo practico notamos que había ciertas columnas cuyo contenido era nulo en más del 60\% de su totalidad. 
+Las mismas son:
 \begin{itemize}
     \item Last\_Activity
     \item Actual\_Delivery\_Date
@@ -141,8 +149,11 @@ Por otra parte, la columna Sales\_Contract\_No no se utilizo dado que se advirti
 Una vez eliminadas estas columnas, quedaron algunos datos vacíos pero no en gran cantidad, por lo que, para ciertos algoritmos que no podían entrenar/predecir con datos faltantes, se opto por reemplazar los mismos con 0.
 
 \section{Feature Engineering}
-Se buscaron todos los atributos o relaciones posibles de las variables contenidas en el set de
-datos proporcionado para el trabajo para luego realizar una selección de features y poder utilizar los mas relevantes para los algoritmos a aplicar.\\
+
+Para la etapa de encontrar y agregar nuevos features útiles nos basamos en el analisis exploratorio realizado en el TP1.
+En el mencionado trabajo práctico se buscaron relaciones posibles de las variables contenidas en el set de
+datos y se agregaron features nuevos dependiendo si cumplían o no cierta condición, de tal manera que luego podamos utilizar los mas relevantes para los algoritmos a aplicar.\\
+
 De esta forma, a partir de los features ya existentes se agregaron lo siguientes:
 \begin{itemize}
     \item Diferencia en días: Indica la diferencia, en días, entre la fecha de creación de la oportunidad y la ultima modificación de la misma.
@@ -170,6 +181,7 @@ De esta forma, a partir de los features ya existentes se agregaron lo siguientes
         \item Last\_Modified\_By\_Opportunity\_Owner: con valor 1 si el responsable de la oportunidad  es el último que modifico la  misma, 0 de lo contrario.
     \end{itemize}
 \end{itemize}
+
 \subsection{Feature Selection}
 Luego de agregar features a los ya existentes con el fin de mejorar las predicciones, encaramos la selección de los mismos para cada modelo de 3 maneras distintas. 
  \begin{itemize}
@@ -178,23 +190,43 @@ Luego de agregar features a los ya existentes con el fin de mejorar las predicci
         \begin{center}
             \includegraphics[scale=0.5]{imgs/feature-selection-xgb.png}
         \end{center}
-        \item Usando los features mas importante según cada modelo: Con cada modelo se entrenó con todas las columnas y luego a ese modelo se le extrajeron los mejores features y con ellos luego se volvería a entrenar.
+        \item Usando los features mas importante según cada modelo: Con cada modelo se entrenó con todas las columnas, luego a ese modelo se le extrajeron los mejores features y con ellos luego se volvió a entrenar.
         Esto fue útil en los casos donde los encoding usados nos generaron miles de columnas/features donde muchos no aportaban nada al modelo.
     \end{itemize}
     
-Como parte del feature selection notamos que ciertos features como \textit{'Opportunity\_Name'} o \textit{'ID'} se consideraban importantes pero en realidad al ser únicas por ítem o por oportunidad lo que ocurría es que algunos modelos los utilizaba incorrectamente por lo que para algunos casos procedimos a eliminarlos.
+Como parte del feature selection notamos que ciertos features como \textit{'Opportunity\_Name'} o \textit{'ID'} se consideraban importantes pero en realidad al ser únicas por ítem o por oportunidad lo que ocurría es que algunos modelos los utilizaban incorrectamente, por lo que para algunos casos procedimos a eliminarlos.
 El caso del \textit{'Opportunity\_ID'} fue un caso particular en el que no podíamos eliminar la columna ya que se necesitaba para poder agrupar los items y también se usaba para generar el submit.
 
 \section{Feature Encoding}
-Después del análisis del primer trabajo practico, se evidenció que el set de datos consiste de variables de tipo numéricas, las cuales no necesitan ningún tipo de codificación, y por otra parte variables categóricas. Como no hay ninguna variable de tipo \textbf{string}, se investigo cual era la mejor forma de tratar este tipo de variables(categóricas), y para ello, se utilizaron los encodings que se detallan a continuación:
+Después del análisis del primer trabajo practico, se evidenció que el set de datos consiste de variables de tipo numéricas, las cuales no necesitan ningún tipo de codificación, y por otra parte variables categóricas. Como no hay ninguna variable de tipo \textbf{string}, se investigo cual era la mejor forma de tratar este tipo de variables(categóricas), y para ello, se utilizaron los encodings que se detallan brevemente a continuación:
 
 \subsection{Mean encoding}
+
+
 \subsection{Binary Encoding}
-\subsection{Count Encoder}
+
+Esta codificación, convierte a cada valor de una categoría en un dígito binario, creando una columna para cada bit. Si hay n valores posibles, entonces la codificación binaria da como resultado $\log _{2}(n)$ columnas binarias nuevas.\newline
+\newline
+La codificación binaria, sigue los siguientes pasos:
+\begin{itemize}
+    \item Primero las categorías se convierten a orden numérico a partir de 1 (el orden se crea cuando las categorías aparecen en un conjunto de datos y no tienen ninguna naturaleza ordinal)
+    \item Luego, esos números enteros son representados en binario
+    \item Por ultimo, cada dígito de la representación binaria representa una columna 
+\end{itemize}
+
+En la siguiente figura se puede visualizar un ejemplo de uso de binary encoding:
+
+\begin{center}
+    \includegraphics[scale=0.5]{imgs/binary-encoding.png}
+\end{center}
+
+\url{https://contrib.scikit-learn.org/category_encoders/binary.html}
+
+\subsection{Count Encoding}
 Este encoder, también conocido como frequency encoder, tal como su nombre lo indica, trabaja con la frecuencia de cada valor. Es decir, para la columna categórica primero calcula la frecuencia de cata categoría en la columna. Una vez hecho esto, cada valor categórico es reemplazado por la cantidad de veces que este valor aparece en el dataset, previamente calculado.
 \url{https://contrib.scikit-learn.org/category_encoders/count.html}
 
-\subsection{Generalized Linear Mixed Model Encoder}
+\subsection{Generalized Linear Mixed Model Encoding}
 
 El modelo lineal generalizado es una generalización de la regresión lineal. La misma, predice el valor esperado de una cantidad desconocida dada como una combinación lineal de un conjunto de valores observados. Lo cual es útil cuando la variable de respuesta tiene una distribución normal, en cambio, el modelo generalizado sirve también para respuestas con distribución normal, binomial, Poisson y gamma, entre otras. \newline
 
@@ -203,13 +235,13 @@ Este encoder, utiliza el modelo mixto lineal generalizado(GLMM), el cual es una 
 El mismo, no tiene hiperparámetros para tunear. Cuantas menos observaciones tenga una categoría y/o más varíe el resultado para una categoría, mayor será la regularización hacia la media. Este encoding es muy poderoso y puede ser utilizable tanto para targets continuos como binomiales. En al caso de targets binomiales(como en este trabajo), el codificador devuelve probabilidades logarítmicas regularizadas por categoría.
 \url{https://contrib.scikit-learn.org/category_encoders/glmm.html}
 
-\subsection{Helmert Encoder}
+\subsection{Helmert Encoding}
 
 Este encoding pertenece al grupo de los 'Contrast Encoders', explicado en polynomial encoder.
 En particular, Helmert, siendo cada "nivel", cada categoría: la media de la variable dependiente para un nivel se compara con la media de la variable dependiente sobre todos los niveles anteriores.
 \url{https://contrib.scikit-learn.org/category_encoders/helmert.html}
 
-\subsection{JamesStein Encoder}
+\subsection{JamesStein Encoding}
 El estimador de James-Stein devuelve un promedio ponderado de:
 \begin{itemize}
     \item La media del target para el valor de la columna 
@@ -218,12 +250,12 @@ El estimador de James-Stein devuelve un promedio ponderado de:
 James-Stein Encoder reduce el promedio hacia el promedio general. Es un codificador basado en mean encoding. Sin embargo, el mismo tiene una limitación práctica: se definió solo para distribuciones normales.
 \url{https://contrib.scikit-learn.org/category_encoders/jamesstein.html}
 
-\subsection{Leave One Out Encoder}
+\subsection{Leave One Out Encoding}
 Este encoder es prácticamente igual a mean encoding. La diferencia es que este, excluye el target de la fila actual al calcular la media del target de un nivel para reducir el efecto de valores atípicos. \newline
 Por otra parte, se puede agregar algo de ruido a los datos para evitar el overfitting. 
 \url{https://contrib.scikit-learn.org/category_encoders/leaveoneout.html}
 
-\subsection{MEstimate Encoder}
+\subsection{MEstimate Encoding}
 Este encoding esta basado en mean encoding pero nos da la posibilidad de aplicar smoothing (regularización) para no filtrar tanto el target al set de entrenamiento. En lugar de usar solo el promedio se puede regularizar mediante la siguiente formula:
 \begin{center}
     \includegraphics[scale=0.5]{imgs/formula-smoothing.png}
@@ -231,12 +263,12 @@ Este encoding esta basado en mean encoding pero nos da la posibilidad de aplicar
 Donde alfa es la variable de regularización que elegimos para nuestro estimador. Como podemos observar si alfa=0 entonces nos queda el promedio del target y es mean-encoding.
 \url{https://contrib.scikit-learn.org/category_encoders/mestimate.html}
 
-\subsection{Ordinal Encoder}
+\subsection{Ordinal Encoding}
 Esta codificación es la mas simple de todas y una de las que peor resultado genera. Consiste en que a cada valor de la variable categórica se lo reemplaza por un número asociado a ese valor. Por ej si tengo 4 posibles valores para una variable se asignarían los números 1, 2, 3 y 4.
 Esto nos convierte directamente una columna categórica a numérica, pero al usar estos números en los modelos se pueden generar relaciones 'muy extrañas' como que una variable categórica mas otra variable categórica dan una tercera variable categórica. Esto no solo no aportará nada al modelo sino que dará malos resultados.
 \url{https://contrib.scikit-learn.org/category_encoders/ordinal.html}
 
-\subsection{WOE Encoder}
+\subsection{WOE Encoding}
 El Weight of Evidence encoding codifica las variables categóricas en base a su peso respecto del target mediante la siguiente formula:
 \begin{center}
     \includegraphics[scale=0.5]{imgs/WOE.png}
@@ -245,23 +277,23 @@ donde adj es el factor que evita una división por 0.
 Este encoding funciona bien con el modelo de LogisticRegression por utilizar la misma escala logaritmica pero tiene la desventaja de que puede sobreajustar o inclusive tenes distintos valores de una variable categórica con el mismo encoding. 
 \url{https://contrib.scikit-learn.org/category_encoders/woe.html}
 
-\subsection{One Hot Encoder}
+\subsection{One Hot Encoding}
 Este tipo de encoding se basa en que para cada valor categórico de una columna del dataset creara una nueva columna de valor binario, si la row tenía ese valor colocara un 1 en la columna y 0 en las demás. Este encoding podía ser util para features con pocos valores posibles, por lo tanto tendríamos la columna original y tantas columnas nuevas como valores posibles. El punto débil de este encoding es que casos de variables con muchos valores posibles o en el caso de tener muchos features categóricos se necesitaría mucha memoria para entrenar.
 \url{https://contrib.scikit-learn.org/category_encoders/onehot.html}
 
-\subsection{Catboost Encoder}
+\subsection{Catboost Encoding}
 Esta codificación esta basada en Mean Encoding pero se diferencia que calcula la probabilidad en tiempo real, es decir sobre la marcha por lo tanto el dataset no puede estar ordenado por la variable Target. La ventaja de calcularlo sobre la marcha es que para un mismo valor de la variable categórica no se van a obtener los mismos valores y por lo tanto no hay que agregar ruido. Como desventaja al igual que Mean Encoding estoy 'filtrando' el Target por lo tanto hay que tener cuidado con no generar overfitting.
 \url{https://contrib.scikit-learn.org/category_encoders/catboost.html}
 
-\subsection{Base N Encoder}
+\subsection{Base N Encoding}
 Esta codificación vendría a ser la generalizacion de one-hot-encoding o binary-encoding, es decir elegimos en que base codificar y generará log en base n de la cantidad de valores posibles de la variable a encodear columnas. En otras palabras si elegimos base = 1 entonces sería como one-hot-encoding y si elegimos base = 2 sería como binary-encoding.
 \url{https://contrib.scikit-learn.org/category_encoders/basen.html}
 
-\subsection{Sum Encoder}
+\subsection{Sum Encoding}
 Es un tipo de encoding también conocido como Effect Encoding o Deviation Encoding, esta basado en one-hot-encoding con la diferencia que en lugar de tener N columnas (1 por cada uno de los N valores posibles de la variable) nos genera N-1 columnas nuevas ya que un valor de la variable se codifica con todos valores -1.
 \url{https://contrib.scikit-learn.org/category_encoders/sum.html#category_encoders.sum_coding.SumEncoder}
 
-\subsection{Polynomial Encoder}
+\subsection{Polynomial Encoding}
 Es un encoding perteneciente al grupo de los 'Contrast Encoders' que permiten centran las variables categóricas de manera que la intersección de un modelo no sea el promedio de una categoría, sino la media de todos los puntos de datos en el conjunto de datos.
 En este caso este el encoder codifica las variables mediante polinomios. 
 \url{https://contrib.scikit-learn.org/category_encoders/polynomial.html}
@@ -331,7 +363,7 @@ Este modelo es un algoritmo de \textit{gradient boosting} sobre arboles de decis
 Produce el modelo predictivo a partir de un conjunto de modelos de predicción débiles. Construye el modelo de forma escalonada y lo generaliza disminuyendo la función de error creciendo verticalmente eligiendo la hoja con mayor "delta loss" para crecer. El crecimiento por hojas, en vez de por niveles, permite reducir aún más el \textit{loss}.
 
 \begin{center}
-    \includegraphics[scale=0.5]{imgs/lightgbm.jpeg}
+    \includegraphics[scale=0.5]{imgs/lightgbm.png}
 \end{center}
 
 \subsection{CatBoost}
@@ -344,7 +376,10 @@ A diferencia de LightGBM el arbol creado por catboost es equilibrado como lo mue
     \includegraphics[scale=0.5]{imgs/catboost.png}
 \end{center}
 
+\subsection{Bagging}
 
+El modelo de Bagging se utiliza en conjunto con bootstrapping y consiste en aplicar el mismo clasificador n veces a distintas muestras del set de entrenamiento (manteniendo el tamaño pero reemplazando valores) y luego promediar sus resultados para el obtener el resultado final. 
+Al entrenar con el mismo tamaño pero reemplazando valores nunca el modelo ve el set de entrenamiento completo en ninguna de las clasificaciones, reduciendo el overfitting y logrando buenos resultados tanto en problemas de clasificación y regresión
 
 \subsection{Logistic Regression}
 Este modelo, es el método de referencia para problemas de clasificación binaria (aquellos donde solo existen dos valores de clase). El mismo, utiliza de base \textit{la función logística} o también llamada \textit{función sigmoidea}, la cual es representada como una curva en forma de S que puede tomar cualquier número real y asignarlo a un valor entre 0 y 1, pero nunca exactamente en esos límites. Logistic Regression predice la probabilidad de que un dato pertenezca a una clase (clase default) y luego esta predicción es transformada a un valor binario con la función logística. 
@@ -363,14 +398,6 @@ En particular, las redes utilizadas para el procesamiento de lenguaje natural so
     \includegraphics[scale=0.5]{imgs/red neuronal recurrente.png}
 \end{center}
 
-
-
-\subsection{SVC}
-El objetivo de SVC, es entrenar el set de datos encontrando el mejor hiper-plano que divide a los mismos en categorías.
-
-\subsection{NuSVC}
-Este algoritmo es similar a SVC (Support Vector Classifier), con la diferencia de que usa como parámetro \textit{'nu'} el cual controla el número de vectores soportados.
-
 \subsection{Naive Bayes Classifier}
 Este algoritmo considera cada feature de forma independiente, calculando la probabilidad de que el feature pertenezca a cada una de las categorías, dando como resultado la que contenga el mayor valor de probabilidad. El modelo utilizado para calcular dicha probabilidad esta basado en el teorema de Bayes. Se parte de la suposición de que todos los predictores tienen el mismo efecto en el resultado. Existen diferentes tipos de clasificadores que siguen este modelo.
 
@@ -379,15 +406,52 @@ Los hiperparámetros comunes en Naive Bayes son:
     \item alfa: Parámetro utilizado para realizar el suavizado de Laplace, el cual permite no tener probabilidades nulas a la hora de calcular la probabilidad de que el vector de palabras para un documento se encuentre en alguna de las categorías. Permitiendo siempre generar alguna clasificación. 
 \end{itemize}
 
-\section{Desarrollo}
+\section{Desarrollo y resultados obtenidos}
+Como ya se menciono, el primer paso fue hacer la limpieza del dataset. Una vez eliminadas las columnas nulas, se guardaron los dataset limpios en nuevos csvs los cuales luego serian utilizados para codificar las variables categóricas. \newline
 
-Finalmente luego de la limpieza de los datasets, el feature engineering y los encoding se prosiguió al entrenamiento y tuneo de hiperparámetros para las distintas combinaciones de modelo-encoding.
+Una vez hecho esto, se procedió a programar por separado cada encoding, previamente detallados, para codificar el dataset preprocesado. \newline
 
-En la primeras pruebas nos encontramos con que los modelos basados en arboles, sin tunear parámetros y usando todos los features eran mejores que los modelos de redes neuronales por lo que los primeros submits que nos determinaron una base fueron con
-RandomForest-MeanEncoding y Xgboost-MeanEncoding.
+Luego, para cada par encoding-modelo se separó el set de entrenamiento en un subset para poder validar los resultados. Generamos un nuevo set de entrenamiento y un set de validacion a partir del set de entrenamiento original, partiéndolo en una proporcion de entre 20 y 30 por ciento para test y entre 80 y 70 por ciento para entrenamiento.\newline
+
+El siguiente paso consistió en determinar si nos convenía entrenar con el total de las columnas del set de entrenamiento y agrupar por el Opportunity\_ID al momento de realizar el submit, o si era mejor agrupar por dicha categoría antes del entrenamiento. Para esto, sin aplicar feature-selection y utilizando todas las columnas se realizó un primer entrenamiento con un modelo basado en arboles de decisión, esto se debe a que el objetivo a predecir es la probabilidad de una oportunidad de ser exitosa (clasificar éxito o no). En este caso utilizamos el modelo de RandomForest junto con MeanEncoding. En estas pruebas se evidenció que daba mejor resultado entrenar con el total de las filas del dataset y agrupar al final del proceso de entrenamiento y predicción.\newline
+
+Ya habiendo decidido utilizar el total de las filas se procedió a generar un submit base para tener una referencia de que número de logLoss teníamos que mejorar. Entrenando cada modelo sin tunear hiperparametros ni aplicando feature-selection, pudimos darnos cuenta que los modelos basados en arboles eran mejores que los modelos de redes neuronales, por lo que los primeros submits que nos determinaron una base fueron con
+RandomForest-BinaryEncoding y Xgboost-MeanEncoding.
+\newline
 
 
+Finalmente comenzamos a entrenar cada modelo con el subset de entrenamiento codificado y validándolo con el set de validación. Así se pudo ver de forma aproximada, la precisión de los distintos modelos y darnos cuenta que los hiper-parámetros son lo más importante de cada algoritmo, y la diferencia entre un buen modelo y uno promedio o incluso malo esta dada por ellos.
+Para la búsqueda de los mejores hiper-parámetros, se utilizó:
+
+\begin{itemize}
+    \item GridSearch: Este proceso es muy costoso en tiempo debido a que prueba todas las combinaciones de los valores posibles establecidos. Si bien esto no encuentra la combinación óptima, al menos nos dio en algunos casos resultados favorables en comparación a los probados manualmente.
+    
+    \item RandomizedSearch: este algoritmo realiza una búsqueda aleatoria de híper-parámetros dentro de los valores posibles especificados, entonces nunca se podía saber con exactitud que conjunto iba a ser el mas adecuado.
+
+\end{itemize}
+
+Por último fuimos optimizando los valores que les pasábamos a las búsquedas de hiper-parámetros, ya que con ciertos valores muy grandes y/o rangos muy amplios de búsquedas teníamos overfitting y para ciertos modelos con encodings como one-hot tardaban en entrenar mas de 12hs.
 
 
-\section{Resultados y conclusiones}
+Observando los resultados nos dimos cuenta que los modelos estaban sobreentrenando, debido a que los features como \textit{'Opportunity\_ID'}, \textit{'ID'}, \textit{'Opportunity\_Name'} eran muy importantes, cuando en realidad no aportan información sino que solo son identificadores.
+
+\section{Conclusiones}
+
+Como conclusión podemos decir que los modelos de arboles de decisión arrojaron los mejores resultados, en particular el mejor se dio con Xgboost, utilizando RandomizedSearch y un encoding de BaseN con base = 5.
+Otra cosa que pudimos observar es que features que creíamos que no serían importantes o que codificarlos no serviría terminaron siendo útiles para ciertos modelos. \newline
+Otro punto es que en el análisis exploratorio realizado en el primer trabajo práctico lo orientamos mas a las visualizaciones y a mostrar datos interesantes o relevantes, pero que finalmente no fueron de mucha ayuda para ese trabajo de predicción. \newline
+Por último podemos decir que los algoritmos que probamos aun pueden ser mejorados, y consideramos que agregando mas features y tuneando mejor los modelos, podrían lograrse mejores resultados. También, creemos que aún quedarían distintas opciones por probar, como por ejemplo: haber empleado otros tipos de algoritmos de ensamble
+
+\section{Código}
+
+Se deja en esta sección el siguiente link para acceder al repositorio de GitHub donde se encuentra todo el código utilizado para implementar todo lo ya explicado.
+
+\url{https://github.com/FernandoSinisi/Orga-Datos-2C-2020}
+
+\section{Video}
+
+En el siguiente link se puede encontrar el vídeo explicando el desarrollo del trabajo práctico.
+\url{LINK AL VIDEO}
+
+
 \end{document}
