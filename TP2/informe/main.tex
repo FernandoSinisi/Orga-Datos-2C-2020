@@ -201,6 +201,19 @@ El caso del \textit{'Opportunity\_ID'} fue un caso particular en el que no podí
 Después del análisis del primer trabajo practico, se evidenció que el set de datos consiste de variables de tipo numéricas, las cuales no necesitan ningún tipo de codificación, y por otra parte variables categóricas. Como no hay ninguna variable de tipo \textbf{string}, se investigo cual era la mejor forma de tratar este tipo de variables(categóricas), y para ello, se utilizaron los encodings que se detallan brevemente a continuación:
 
 \subsection{Mean encoding}
+Este enconding, a diferencia de otros, no afecta el volumen de datos y tiene a un aprendizaje más rápido. Es decir, no agrega columnas extra. Su forma de codificar es la siguiente:
+\begin{itemize}
+    \item Seleccionar la variable categoríca a codificar
+    \item Hacer un gorup by la variable categórica, pasándole a \textbf{'agg'} la suma de la variable Target(cantidad de unos).
+    \item Hacer un gorup by la variable categórica, pasándole a \textbf{'agg'} \textbf{'count'}, sobre la columna Target.
+    \item Dividir los resultados del paso 2/los resultados del paso tres y unir con el test.
+\end{itemize}
+
+En la siguiente imagen se puede ver un ejemplo de uso de Mean Encoding
+
+\begin{center}
+    \includegraphics[scale=0.5]{imgs/mean-encoding.png}
+\end{center}
 
 
 \subsection{Binary Encoding}
@@ -302,17 +315,18 @@ En este caso este el encoder codifica las variables mediante polinomios.
 Cada uno de los encoding mencionados en la sección anterior pueden funcionar de distinta manera en distintos modelos, así que se probaron ciertas combinaciones de los mismos con los siguiente algoritmos de machine learning:
 
 \subsection{KNN}
-Este algoritmo consiste en encontrar los vecinos más cercanos al punto que se busca clasificar, para luego predecir la clase del punto en cuestión que se obtendrá a partir de la clase mayoritaria presente en sus vecinos.
-Los hiperparámetros comunes en KNN son:
+Este es un algoritmo simple, pero que no por eso no es importante para problemas de regresión o clasificación. Consiste en encontrar los vecinos más cercanos al punto que se desea clasificar, según una medida de distancia definida, para luego predecir la clase del punto en cuestión dependiendo de la clase mayoritaria presente entre sus vecinos.
+Los hiper-parámetros comunes en KNN son:
 \begin{itemize}
-    \item n-neighbors: Radio del círculo para la clasificación de los puntos.
+    \item n-neighbors: Cantidad de vecinos a utilizar para la clasificación.
     
     \item weights: Puede seleccionarse entre \textit{uniform}, donde cada vecino dentro del perímetro tiene el mismo peso o "distancia", donde los puntos mas cercanos tendrán un mayor peso.
     
-    \item metric: Define la metrica para calcular las distancias entre los puntos.
+    \item metric: Define la métrica para calcular las distancias entre los puntos.
     
 \end{itemize}
-KNN es uno de los algoritmos mas sencillos de Machine Learning pero definiendo correctamente sus hiperparámetros puede ser muy eficiente. Una desventaja es que se trata de un algoritmo de orden cuadrático por lo que puede tener un gran impacto a la hora de la ejecución.
+
+Una desventaja es que se trata de un algoritmo de orden cuadrático por lo que puede tener un gran impacto a la hora de la ejecución (no consume tiempo de entrenamiento).
 
 \subsection{Random Forest}
 Este es uno de los algoritmos mas populares para clasificación, el cual crea un conjunto de árboles de decisión a partir de un subconjunto del set de datos de entrenamiento seleccionado al azar. 
@@ -359,15 +373,14 @@ Ejemplo del arbol creado con xgboost
 
 
 \subsection{LightGBM}
-Este modelo es un algoritmo de \textit{gradient boosting} sobre arboles de decisión.
-Produce el modelo predictivo a partir de un conjunto de modelos de predicción débiles. Construye el modelo de forma escalonada y lo generaliza disminuyendo la función de error creciendo verticalmente eligiendo la hoja con mayor "delta loss" para crecer. El crecimiento por hojas, en vez de por niveles, permite reducir aún más el \textit{loss}.
+Este modelo es un algoritmo de \textit{gradient boosting} sobre arboles de decisión. El proceso de creacion de los arboles árboles en forma de hojas se realiza de manera de hacer crecer la hoja que minimiza la pérdida, permitiendo el crecimiento de un árbol desequilibrado. Debido a que no crece por niveles, sino por hojas, permite reducir aún más el \textit{loss} pero puede llegar a generar overffiting cuando la cantidad de datos es poca. En estos casos, es importante controlar la profundidad del árbol.
 
 \begin{center}
     \includegraphics[scale=0.5]{imgs/lightgbm.png}
 \end{center}
 
 \subsection{CatBoost}
-Este es un algoritmo de aprendizaje que aumenta el gradiente en árboles de decisión que como lo dice su nombre, funciona bien para distintas categorías de datos.
+Este es un algoritmo de aprendizaje que aumenta el gradiente en árboles de decisión y como lo dice su nombre, funciona bien para distintas categorías de datos.
 Durante el entrenamiento, se construye un conjunto de árboles de decisión de forma consecutiva. Cada árbol sucesivo se construye con pérdidas reducidas en comparación con los árboles anteriores.
 Para evitar el overfitting, utiliza un detector que cuando se activa, los árboles dejan de construirse.
 A diferencia de LightGBM el arbol creado por catboost es equilibrado como lo muestra la imagen:
@@ -399,9 +412,10 @@ En particular, las redes utilizadas para el procesamiento de lenguaje natural so
 \end{center}
 
 \subsection{Naive Bayes Classifier}
-Este algoritmo considera cada feature de forma independiente, calculando la probabilidad de que el feature pertenezca a cada una de las categorías, dando como resultado la que contenga el mayor valor de probabilidad. El modelo utilizado para calcular dicha probabilidad esta basado en el teorema de Bayes. Se parte de la suposición de que todos los predictores tienen el mismo efecto en el resultado. Existen diferentes tipos de clasificadores que siguen este modelo.
+Este es un algoritmo de aprendizaje supervisado de la familia de los clasificadores probabilísticos y esta basado en el teorema de Bayes.
+Este modelo considera cada feature de forma independiente, calculando la probabilidad de que el mismo pertenezca a cada una de las categorías, dando como resultado la que contenga el mayor valor de probabilidad. Para el calculo de la probabilidad se define la función probabilidad según como sea la variable a clasificar. Existen diferentes tipos de clasificadores que siguen este modelo.
 
-Los hiperparámetros comunes en Naive Bayes son:
+Los hiper-parámetros comunes en Naive Bayes son:
 \begin{itemize}
     \item alfa: Parámetro utilizado para realizar el suavizado de Laplace, el cual permite no tener probabilidades nulas a la hora de calcular la probabilidad de que el vector de palabras para un documento se encuentre en alguna de las categorías. Permitiendo siempre generar alguna clasificación. 
 \end{itemize}
@@ -440,7 +454,7 @@ Observando los resultados nos dimos cuenta que los modelos estaban sobreentrenan
 Como conclusión podemos decir que los modelos de arboles de decisión arrojaron los mejores resultados, en particular el mejor se dio con Xgboost, utilizando RandomizedSearch y un encoding de BaseN con base = 5.
 Otra cosa que pudimos observar es que features que creíamos que no serían importantes o que codificarlos no serviría terminaron siendo útiles para ciertos modelos. \newline
 Otro punto es que en el análisis exploratorio realizado en el primer trabajo práctico lo orientamos mas a las visualizaciones y a mostrar datos interesantes o relevantes, pero que finalmente no fueron de mucha ayuda para ese trabajo de predicción. \newline
-Por último podemos decir que los algoritmos que probamos aun pueden ser mejorados, y consideramos que agregando mas features y tuneando mejor los modelos, podrían lograrse mejores resultados. También, creemos que aún quedarían distintas opciones por probar, como por ejemplo: haber empleado otros tipos de algoritmos de ensamble
+Por último podemos decir que los algoritmos que probamos aun pueden ser mejorados, y consideramos que agregando mas features y tuneando mejor los modelos, podrían lograrse mejores resultados. También, creemos que aún quedarían distintas opciones por probar, como por ejemplo: haber empleado otros tipos de algoritmos de ensamble.
 
 \section{Código}
 
